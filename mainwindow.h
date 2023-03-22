@@ -12,7 +12,7 @@ class MainWindow : public QMainWindow
    Q_OBJECT
 public:
    explicit MainWindow(QWidget *parent = nullptr);
-   ~MainWindow();
+   ~MainWindow();   
 
 protected:
    void closeEvent(QCloseEvent *) override;
@@ -29,6 +29,7 @@ signals:
 
 public slots:
    void start_calculating();
+   void set_pause();
 };
 
 #endif // MAINWINDOW_H

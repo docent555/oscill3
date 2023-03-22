@@ -6,6 +6,10 @@
 #include <fstream>
 #include <QDebug>
 #include <QGridLayout>
+#include <QMutex>
+#include <QMutexLocker>
+
+extern QMutex mx;
 
 Widgetui::Widgetui(Rkn *r, QWidget *parent)
     : QWidget(parent), ui(new Ui::Widgetui), m_listCount(3), m_valueMax(10), m_valueCount(7)
@@ -89,6 +93,7 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
 
    connect(r, SIGNAL(paintSignal()), this, SLOT(paintGraph()), Qt::BlockingQueuedConnection);
    connect(this, SIGNAL(start_calc()), parw, SLOT(start_calculating()));
+   connect(this, SIGNAL(pause()), parw, SLOT(set_pause()));
 
    init_paintGraph();
 }
@@ -349,5 +354,25 @@ void Widgetui::init_paintGraph()
 
 void Widgetui::on_pushButton_Start_clicked()
 {
-   emit start_calc();
+   if (first_time == 0) {
+      emit start_calc();
+      ui->pushButton_Start->setEnabled(false);
+      first_time = 1;
+   } else {
+      emit pause();
+      ui->pushButton_Stop->setEnabled(true);
+      ui->pushButton_Start->setEnabled(false);
+   }
+}
+
+void Widgetui::on_pushButton_Stop_clicked()
+{
+   emit pause();
+   ui->pushButton_Stop->setEnabled(false);
+   ui->pushButton_Start->setEnabled(true);
+}
+
+void Widgetui::on_pushButton_Exit_clicked()
+{
+   parw->close();
 }

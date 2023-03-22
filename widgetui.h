@@ -52,8 +52,13 @@ private slots:
 
    void on_pushButton_Start_clicked();
 
+   void on_pushButton_Stop_clicked();
+
+   void on_pushButton_Exit_clicked();
+
 signals:
    void start_calc();
+   void pause();
 
 private:
    void connectSignals(); 
@@ -73,6 +78,7 @@ private:
    QList<QChartView *> m_charts;
    Rkn *r;
    QWidget *parw;
+   int first_time = 0;
 
 private:
    void init_paintGraph();

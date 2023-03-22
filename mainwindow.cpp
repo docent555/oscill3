@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
    pause = 0;
 
    this->setCentralWidget(widget);
-   this->resize(1150, 700);
+   this->resize(1020, 700);
 
    // Запуск выполнения метода run будет осуществляться по сигналу запуска от соответствующего потока
    //   connect(thread, &QThread::started, r, &Rkn::calculate);
@@ -66,6 +66,17 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
       }
    } else if (event->key() == Qt::Key_Escape) {
       this->close();
+   }
+}
+
+void MainWindow::set_pause()
+{
+   if (pause == 0) {
+      mx.lock();
+      pause++;
+   } else {
+      mx.unlock();
+      pause--;
    }
 }
 
