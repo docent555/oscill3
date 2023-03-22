@@ -13,12 +13,12 @@ extern QMutex mx;
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
    r = new Rkn();
-   widget = new Widgetui(r);
+   widget = new Widgetui(r, this);
    thread = new QThread();
    pause = 0;
 
    this->setCentralWidget(widget);
-   this->resize(1020, 700);
+   this->resize(1150, 700);
 
    // Запуск выполнения метода run будет осуществляться по сигналу запуска от соответствующего потока
    //   connect(thread, &QThread::started, r, &Rkn::calculate);
@@ -31,6 +31,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
    //    // EventLoop для ожидания записи результата
    //    connect(this, SIGNAL(freeEventLoop()), &r->loop, SLOT(quit()));
 
+   //   // Передаём объект r в поток
+   //   r->moveToThread(thread);
+   //   //    r->moveToThread(&thread);
+   //   // Запускаем счет
+   //   r->setStop(false);
+   //   r->setCalculating(true);
+   //   thread->start();
+   //   //    thread.start();
+   //   start_calculating();
+}
+
+void MainWindow::start_calculating()
+{
    // Передаём объект r в поток
    r->moveToThread(thread);
    //    r->moveToThread(&thread);

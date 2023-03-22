@@ -50,6 +50,11 @@ private:
 private slots:
    void updateUI();
 
+   void on_pushButton_Start_clicked();
+
+signals:
+   void start_calc();
+
 private:
    void connectSignals(); 
    QChart *createScatterChart_trj();
@@ -67,6 +72,7 @@ private:
    QList<QLineSeries *> series_prof_line;
    QList<QChartView *> m_charts;
    Rkn *r;
+   QWidget *parw;
 
 private:
    void init_paintGraph();

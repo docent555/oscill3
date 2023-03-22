@@ -12,6 +12,8 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
 {
    ui->setupUi(this);
 
+   parw = parent; // dlya reagirovaniya na knopku <Exit>
+
    z = r->getz();
    nz = r->getnz();
    p = r->get_p();
@@ -35,7 +37,7 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    //						   / Читаем данные из файла input.dat
    //========================================================================================//
 
-   sAr = "Амплитуда поля: " + sAr.setNum(real(A[0]));
+   sAr = "F: " + sAr.setNum(real(A[0]));
    sNth = "Число электронов: " + sNth.setNum(Ne);
    sdelta = "Расстройка синхронизма: " + sdelta.setNum(delta);
    sL = "Длина системы: " + sL.setNum(L);
@@ -86,6 +88,7 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    updateUI();
 
    connect(r, SIGNAL(paintSignal()), this, SLOT(paintGraph()), Qt::BlockingQueuedConnection);
+   connect(this, SIGNAL(start_calc()), parw, SLOT(start_calculating()));
 
    init_paintGraph();
 }
@@ -98,7 +101,7 @@ Widgetui::~Widgetui()
 QChart *Widgetui::createMixedChart_profile()
 {
    QChart *chart = new QChart();
-   chart->setTitle("Траектории");
+   chart->setTitle("F");
    chart->setTheme(QChart::ChartThemeDark);
    QFont font = chart->titleFont();
    font.setPointSize(10);
@@ -295,7 +298,7 @@ void Widgetui::paintGraph()
    series_prof_scat[0]->clear();
    series_prof_scat[0]->setBrush(red);
    series_prof_scat[0]->append(z[j], abs(A[j]));
-   sAr = "Амплитуда поля: " + sAr.setNum(real(A[j]));
+   sAr = "F: " + sAr.setNum(real(A[j]));
    ui->label_Ar->setText(sAr);
 }
 
@@ -306,28 +309,45 @@ void Widgetui::init_paintGraph()
    QColor green(Qt::green);
    QColor red(Qt::red);
 
+   ofstream f;
+   f.open("test.dat");
+   for (int i = 0; i < Ne; i++) {
+      f << i << ' ' << real(p[i][j]) << "   " << imag(p[i][j]) << '\n';
+   }
+   f.close();
+
    if (phase_space == 0) {
       yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
 
       for (int i = 0; i < ne; i++) {
-         if (draw_trajectories == 0)
-            series[i]->clear();
+         //         if (draw_trajectories == 0)
+         //            series[i]->clear();
          series[i]->setBrush(green);
          series[i]->append(z[j], abs(p[i][j]));
       }
-      for (int i = 0; i < nz; i++)
-         series_prof_line[0]->append(z[i], abs(A[i]));
    } else {
       xAxis->setRange((*xmin) - 0.2, (*xmax) + 0.2);
       yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
 
       for (int i = 0; i < ne; i++) {
-         if (draw_trajectories == 0)
-            series[i]->clear();
+         //         if (draw_trajectories == 0)
+         //            series[i]->clear();
          series[i]->setBrush(green);
+         //         series[i]->append(real(p[i][j]), imag(p[i][j]));
          series[i]->append(real(p[i][j]), imag(p[i][j]));
       }
-      for (int i = 0; i < nz; i++)
-         series_prof_line[0]->append(z[i], abs(A[i]));
    }
+   for (int i = 0; i < nz; i++)
+      series_prof_line[0]->append(z[i], abs(A[i]));
+
+   series_prof_scat[0]->clear();
+   series_prof_scat[0]->setBrush(red);
+   series_prof_scat[0]->append(z[j], abs(A[j]));
+   sAr = "F: " + sAr.setNum(real(A[j]));
+   ui->label_Ar->setText(sAr);
+}
+
+void Widgetui::on_pushButton_Start_clicked()
+{
+   emit start_calc();
 }

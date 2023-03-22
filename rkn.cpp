@@ -87,6 +87,50 @@ Rkn::Rkn(QObject *parent) : QObject(parent), ic(0.0, 1.0)
    }
 
    calc_A(A, z, Ar, Ai);
+
+   //****************************************************************************************//
+   //						     Начальные условия для p
+   //****************************************************************************************//
+   for (int k = 0; k < Ne; k++) {
+      //      th[0][k] = hth * k;
+      //      th[0][k] = hth * k - M_PI / 2.0;
+      //      dthdz[0][k] = delta;
+      p[k][0] = exp(ic * hth * double(k));
+      for (int i = 1; i < NZ; i++) {
+         //         th[i][k] = 0.0;
+         //         dthdz[i][k] = 0.0;
+         p[k][i] = 0.0;
+      }
+
+      double pre, pim, absp;
+
+      pre = real(p[k][0]);
+      pim = imag(p[k][0]);
+      if (pre < premin)
+         premin = pre;
+      if (pre > premax)
+         premax = pre;
+      if (pim < pimmin)
+         pimmin = pim;
+      if (pim > pimmax)
+         pimmax = pim;
+
+      absp = abs(p[k][0]);
+      if (absp < abspmin)
+         abspmin = absp;
+      if (absp > abspmax)
+         abspmax = absp;
+   }
+
+   //   ofstream f;
+   //   f.open("test.dat");
+   //   for (int i = 0; i < Ne; i++) {
+   //      f << i << ' ' << real(p[i][0]) << "   " << imag(p[i][0]) << '\n';
+   //   }
+   //   f.close();
+   //========================================================================================//
+   //						   / Начальные условия для p
+   //========================================================================================//
 }
 
 bool Rkn::calculating() const
@@ -128,17 +172,17 @@ void Rkn::calculate()
    //						     Начальные условия
    //****************************************************************************************//
 
-   for (int k = 0; k < Ne; k++) {
-      //      th[0][k] = hth * k;
-      //      th[0][k] = hth * k - M_PI / 2.0;
-      //      dthdz[0][k] = delta;
-      p[k][0] = exp(ic * hth * double(k));
-      for (int i = 1; i < NZ; i++) {
-         //         th[i][k] = 0.0;
-         //         dthdz[i][k] = 0.0;
-         p[k][i] = 0.0;
-      }
-   }  
+   //   for (int k = 0; k < Ne; k++) {
+   //      //      th[0][k] = hth * k;
+   //      //      th[0][k] = hth * k - M_PI / 2.0;
+   //      //      dthdz[0][k] = delta;
+   //      p[k][0] = exp(ic * hth * double(k));
+   //      for (int i = 1; i < NZ; i++) {
+   //         //         th[i][k] = 0.0;
+   //         //         dthdz[i][k] = 0.0;
+   //         p[k][i] = 0.0;
+   //      }
+   //   }
 
    for (int k = 0; k < Ne; k++) {
       qDebug() << real(p[k][0]);
