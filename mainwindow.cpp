@@ -57,26 +57,29 @@ void MainWindow::start_calculating()
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
    if (event->key() == Qt::Key_Space) {
-      if (pause == 0) {
-         mx.lock();
-         pause++;
-      } else {
-         mx.unlock();
-         pause--;
-      }
+      make_pause();
+      //      if (pause == 0) {
+      //         mx.lock();
+      //         pause++;
+      //      } else {
+      //         mx.unlock();
+      //         pause--;
+      //      }
    } else if (event->key() == Qt::Key_Escape) {
       this->close();
    }
 }
 
-void MainWindow::set_pause()
+void MainWindow::make_pause()
 {
    if (pause == 0) {
       mx.lock();
       pause++;
+      widget->disable_enable_on_stop();
    } else {
       mx.unlock();
       pause--;
+      widget->disable_enable_on_start();
    }
 }
 

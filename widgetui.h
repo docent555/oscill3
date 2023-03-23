@@ -43,6 +43,8 @@ private:
 public:
    explicit Widgetui(Rkn *, QWidget *parent = nullptr);
    ~Widgetui();
+   void disable_enable_on_start();
+   void disable_enable_on_stop();
 
 private:
    Ui::Widgetui *ui;

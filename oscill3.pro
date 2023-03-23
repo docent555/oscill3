@@ -6,7 +6,6 @@ HEADERS += \
     dialog.h \
     mainwindow.h \
     rkn.h \
-    widget.h \
     widgetui.h
 
 SOURCES += \
@@ -14,7 +13,6 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     rkn.cpp \
-    widget.cpp \
     widgetui.cpp
 
 # Default rules for deployment.

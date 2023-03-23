@@ -93,7 +93,7 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
 
    connect(r, SIGNAL(paintSignal()), this, SLOT(paintGraph()), Qt::BlockingQueuedConnection);
    connect(this, SIGNAL(start_calc()), parw, SLOT(start_calculating()));
-   connect(this, SIGNAL(pause()), parw, SLOT(set_pause()));
+   connect(this, SIGNAL(pause()), parw, SLOT(make_pause()));
 
    init_paintGraph();
 }
@@ -281,7 +281,7 @@ void Widgetui::paintGraph()
    QColor red(Qt::red);
 
    if (phase_space == 0) {
-      yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
+      yAxis->setRange((*ymin) - 0.1, (*ymax) + 0.1);
 
       for (int i = 0; i < ne; i++) {
          if (draw_trajectories == 0)
@@ -360,14 +360,22 @@ void Widgetui::on_pushButton_Start_clicked()
       first_time = 1;
    } else {
       emit pause();
-      ui->pushButton_Stop->setEnabled(true);
-      ui->pushButton_Start->setEnabled(false);
    }
+}
+
+void Widgetui::disable_enable_on_start()
+{
+   ui->pushButton_Stop->setEnabled(true);
+   ui->pushButton_Start->setEnabled(false);
 }
 
 void Widgetui::on_pushButton_Stop_clicked()
 {
    emit pause();
+}
+
+void Widgetui::disable_enable_on_stop()
+{
    ui->pushButton_Stop->setEnabled(false);
    ui->pushButton_Start->setEnabled(true);
 }

@@ -29,7 +29,7 @@ signals:
 
 public slots:
    void start_calculating();
-   void set_pause();
+   void make_pause();
 };
 
 #endif // MAINWINDOW_H
