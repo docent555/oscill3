@@ -58,9 +58,12 @@ private slots:
 
    void on_pushButton_Exit_clicked();
 
+   void on_pushButton_Reboot_clicked();
+
 signals:
    void start_calc();
    void pause();
+   void reboot();
 
 private:
    void connectSignals(); 

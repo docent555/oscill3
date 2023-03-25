@@ -1,11 +1,13 @@
 #include "mainwindow.h"
 
+#include <QApplication>
 #include <QCloseEvent>
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QProcess>
 #include <QString>
 
 extern QMutex mx;
@@ -162,6 +164,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
       event->accept();
    }
    mx.unlock();
+}
+
+void MainWindow::reboot()
+{
+   QString program = QApplication::applicationFilePath();
+   QStringList arguments = QApplication::arguments();
+   QString workingDirectory = QDir::currentPath();
+   QProcess::startDetached(program, arguments, workingDirectory);
+   QApplication::exit();
 }
 
 MainWindow::~MainWindow() {}

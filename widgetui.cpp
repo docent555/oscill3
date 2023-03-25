@@ -94,6 +94,9 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    connect(r, SIGNAL(paintSignal()), this, SLOT(paintGraph()), Qt::BlockingQueuedConnection);
    connect(this, SIGNAL(start_calc()), parw, SLOT(start_calculating()));
    connect(this, SIGNAL(pause()), parw, SLOT(make_pause()));
+   connect(this, SIGNAL(reboot()), parw, SLOT(reboot()));
+
+   ui->pushButton_Start->setFocus();
 
    init_paintGraph();
 }
@@ -131,7 +134,8 @@ QChart *Widgetui::createMixedChart_profile()
    qDebug() << "Ссоздание серии для профиля";
 
    yAxis_prof = new QValueAxis; // Ось Y
-   yAxis_prof->setRange(-0.2, 1.2);
+                                //   yAxis_prof->setRange(-0.2, 1.2);
+   yAxis_prof->setRange(*ymin_prof - 0.05, *ymax_prof + 0.05);
    font = xAxis_prof->titleFont();
    font.setPointSize(10);
    yAxis_prof->setTitleFont(font);
@@ -281,14 +285,14 @@ void Widgetui::paintGraph()
    QColor red(Qt::red);
 
    if (phase_space == 0) {
-      yAxis->setRange((*ymin) - 0.1, (*ymax) + 0.1);
+      yAxis->setRange((*ymin) - 0.05, (*ymax) + 0.05);
 
       for (int i = 0; i < ne; i++) {
          if (draw_trajectories == 0)
             series[i]->clear();
          series[i]->setBrush(green);
          series[i]->append(z[j], abs(p[i][j]));
-      }      
+      }
    } else {
       xAxis->setRange((*xmin) - 0.2, (*xmax) + 0.2);
       yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
@@ -322,7 +326,7 @@ void Widgetui::init_paintGraph()
    f.close();
 
    if (phase_space == 0) {
-      yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
+      yAxis->setRange((*ymin) - 0.05, (*ymax) + 0.05);
 
       for (int i = 0; i < ne; i++) {
          //         if (draw_trajectories == 0)
@@ -383,4 +387,9 @@ void Widgetui::disable_enable_on_stop()
 void Widgetui::on_pushButton_Exit_clicked()
 {
    parw->close();
+}
+
+void Widgetui::on_pushButton_Reboot_clicked()
+{
+   emit reboot();
 }
