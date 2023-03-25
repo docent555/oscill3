@@ -27,18 +27,18 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    draw_trajectories = r->get_draw_trajectories();
    A = r->getA();
 
-   ifstream in("input.dat");
+   ifstream in("input_oscill.in");
    if (!in) {
-      qDebug() << "Error opening file input.dat";
+      qDebug() << "Error opening file input_oscill.in";
       exit(1);
    }
 
    //****************************************************************************************//
-   //							 Читаем данные из файла input.dat
+   //							 Читаем данные из файла input_oscill.in
    //****************************************************************************************//
    in >> h >> L >> Ne >> Ar >> delta >> phase_space >> draw_trajectories;
    //========================================================================================//
-   //						   / Читаем данные из файла input.dat
+   //						   / Читаем данные из файла input_oscill.in
    //========================================================================================//
 
    sAr = "F: " + sAr.setNum(real(A[0]));
@@ -318,12 +318,12 @@ void Widgetui::init_paintGraph()
    QColor green(Qt::green);
    QColor red(Qt::red);
 
-   ofstream f;
-   f.open("test.dat");
-   for (int i = 0; i < Ne; i++) {
-      f << i << ' ' << real(p[i][j]) << "   " << imag(p[i][j]) << '\n';
-   }
-   f.close();
+   //   ofstream f;
+   //   f.open("test.dat");
+   //   for (int i = 0; i < Ne; i++) {
+   //      f << i << ' ' << real(p[i][j]) << "   " << imag(p[i][j]) << '\n';
+   //   }
+   //   f.close();
 
    if (phase_space == 0) {
       yAxis->setRange((*ymin) - 0.05, (*ymax) + 0.05);
