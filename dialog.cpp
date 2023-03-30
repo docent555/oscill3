@@ -15,10 +15,10 @@ Dialog::Dialog(
    if (!f) {
       //        qDebug() << "Error opening file input_oscill.in";
       //        exit(1);
-      Ar = 1;
-      Nth = 8;
-      delta = -1;
-      L = 10;
+      Ar = 0.134002827641379;
+      Nth = 64;
+      delta = 0.5;
+      L = 30.565602486509601;
       h = 0.05;
       phase_space = 1;
       draw_trajectories = 0;

@@ -26,6 +26,7 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    phase_space = r->get_phase_space();
    draw_trajectories = r->get_draw_trajectories();
    A = r->getA();
+   eff = r->get_eff();
 
    ifstream in("input_oscill.in");
    if (!in) {
@@ -41,13 +42,14 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    //						   / Читаем данные из файла input_oscill.in
    //========================================================================================//
 
-   sAr = "F: " + sAr.setNum(real(A[0]));
+   //   sAr = "F: " + sAr.setNum(real(A[0]));
+   sEta = "КПД: " + sEta.setNum(0);
    sNth = "Число электронов: " + sNth.setNum(Ne);
    sdelta = "Расстройка синхронизма: " + sdelta.setNum(delta);
    sL = "Длина системы: " + sL.setNum(L);
    sh = "Шаг: " + sh.setNum(h);
 
-   ui->label_Ar->setText(sAr);
+   ui->label_Eta->setText(sAr);
    ui->label_L->setText(sL);
    ui->label_Ne->setText(sNth);
    ui->label_delta->setText(sdelta);
@@ -79,6 +81,14 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
       ui->pView->setMaximumSize(max);
    }
 
+   ymin_eta = r->get_etamin();
+   ymax_eta = r->get_etamax();
+   //      xmin_eta = r->get_thmin();
+   //      xmax_eta = r->get_thmax();
+   chart_eff = new QChart();
+   chart_eff = createLineChart_eta();
+   ui->effView->setChart(chart_eff);
+
    qDebug() << "Перед созданием профиля";
 
    ymin_prof = r->get_Amin();
@@ -87,7 +97,7 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    chart_prof = createMixedChart_profile();
    ui->profView->setChart(chart_prof);
 
-   m_charts << ui->pView << ui->profView;
+   m_charts << ui->pView << ui->profView << ui->effView;
 
    updateUI();
 
@@ -106,10 +116,83 @@ Widgetui::~Widgetui()
    delete ui;
 }
 
+QChart *Widgetui::createLineChart_eta()
+{
+   qDebug() << "Начало создания серии для КПД";
+
+   QChart *chart_eta = new QChart();
+   chart_eta->setTitle("КПД");
+   chart_eta->setTheme(QChart::ChartThemeDark);
+   QFont font = chart_eta->titleFont();
+   font.setPointSize(10);
+   chart_eta->setTitleFont(font);
+   QColor color(Qt::red);
+   QPen *pen = new QPen();
+   pen->setWidth(3);
+   pen->setColor(color);
+
+   //   for (int i = 0; i < ne; i++) {
+   //      series_eta.append(new QLineSeries());
+   //      series_eta[i]->setUseOpenGL(true);
+   //   }
+
+   series_eta.append(new QLineSeries());
+   series_eta[0]->setUseOpenGL(true);
+
+   series_eta[0]->setPen(*pen);
+
+   xAxis_eta = new QValueAxis; // Ось X
+                               //    xAxis_eta->setRange(0, z[nz - 1]);
+                               //   xAxis_eta->setRange(*xmin_eta, *xmax_eta);
+   xAxis_eta->setRange(0, L);
+   xAxis_eta->setTitleText(tr("z")); // Название оси X
+   //    xAxis_eta->setTitleBrush(Qt::black); // Цвет названия
+   //    xAxis_eta->setLabelsColor(Qt::black); // Цвет элементов оси
+   font = xAxis_eta->titleFont();
+   font.setPointSize(10);
+   xAxis_eta->setTitleFont(font);
+   font = xAxis_eta->labelsFont();
+   font.setPointSize(8);
+   xAxis_eta->setLabelsFont(font);
+
+   qDebug() << "Ссоздание серии для КПД";
+
+   yAxis_eta = new QValueAxis; // Ось Y
+   yAxis_eta->setRange(-0.2, 1.2);
+   //   yAxis_eta->setTitleText(tr("КПД")); // Название оси Y
+   //    yAxis_eta->setTitleBrush(Qt::black); // Цвет названия
+   //    yAxis_eta->setLabelsColor(Qt::black); // Цвет элементов оси
+   font = xAxis_eta->titleFont();
+   font.setPointSize(10);
+   yAxis_eta->setTitleFont(font);
+   font = xAxis_eta->labelsFont();
+   font.setPointSize(8);
+   yAxis_eta->setLabelsFont(font);
+
+   chart_eta->addAxis(xAxis_eta, Qt::AlignBottom);
+   chart_eta->addAxis(yAxis_eta, Qt::AlignLeft);
+
+   //   for (int i = 0; i < ne; ++i) {
+   //      chart_eta->addSeries(series_eta[i]);
+   //      //    chart->setAxisX(xAxis_eta, serieskpd); // Назначить ось xAxis_eta, осью X для diagramA
+   //      series_eta[i]->attachAxis(xAxis_eta);
+   //      //    chart->setAxisY(yAxis_eta, serieskpd); // Назначить ось yAxis_eta, осью Y для diagramA
+   //      series_eta[i]->attachAxis(yAxis_eta);
+   //   }
+
+   chart_eta->addSeries(series_eta[0]);
+   series_eta[0]->attachAxis(xAxis_eta);
+   series_eta[0]->attachAxis(yAxis_eta);
+
+   qDebug() << "Конец создания серии для КПД";
+
+   return chart_eta;
+}
+
 QChart *Widgetui::createMixedChart_profile()
 {
    QChart *chart = new QChart();
-   chart->setTitle("F");
+   chart->setTitle("f(z)");
    chart->setTheme(QChart::ChartThemeDark);
    QFont font = chart->titleFont();
    font.setPointSize(10);
@@ -307,8 +390,14 @@ void Widgetui::paintGraph()
    series_prof_scat[0]->clear();
    series_prof_scat[0]->setBrush(red);
    series_prof_scat[0]->append(z[j], abs(A[j]));
-   sAr = "F: " + sAr.setNum(real(A[j]));
-   ui->label_Ar->setText(sAr);
+   //   sAr = "F: " + sAr.setNum(real(A[j]));
+   sEta = "КПД: " + sEta.setNum(eff[j]);
+   ui->label_Eta->setText(sEta);
+
+   yAxis_eta->setRange((*ymin_eta) - 0.1, (*ymax_eta + 0.1));
+   //   series_eta[0]->setBrush(red);
+   //   series_eta[0]->setPen(red);
+   series_eta[0]->append(z[j], eff[j]);
 }
 
 void Widgetui::init_paintGraph()
@@ -352,8 +441,15 @@ void Widgetui::init_paintGraph()
    series_prof_scat[0]->clear();
    series_prof_scat[0]->setBrush(red);
    series_prof_scat[0]->append(z[j], abs(A[j]));
-   sAr = "F: " + sAr.setNum(real(A[j]));
-   ui->label_Ar->setText(sAr);
+   //   sAr = "F: " + sAr.setNum(real(A[j]));
+   //   ui->label_Ar->setText(sAr);
+   sEta = "КПД: " + sEta.setNum(0);
+   ui->label_Eta->setText(sEta);
+
+   yAxis_eta->setRange((*ymin_eta) - 0.1, (*ymax_eta + 0.1));
+   //   series_eta[0]->setBrush(red);
+   //   series_eta[0]->setPen(red);
+   series_eta[0]->append(z[j], eff[j]);
 }
 
 void Widgetui::on_pushButton_Start_clicked()
@@ -371,6 +467,7 @@ void Widgetui::disable_enable_on_start()
 {
    ui->pushButton_Stop->setEnabled(true);
    ui->pushButton_Start->setEnabled(false);
+   ui->pushButton_Stop->setFocus();
 }
 
 void Widgetui::on_pushButton_Stop_clicked()
@@ -382,6 +479,7 @@ void Widgetui::disable_enable_on_stop()
 {
    ui->pushButton_Stop->setEnabled(false);
    ui->pushButton_Start->setEnabled(true);
+   ui->pushButton_Start->setFocus();
 }
 
 void Widgetui::on_pushButton_Exit_clicked()

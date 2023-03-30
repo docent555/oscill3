@@ -76,6 +76,7 @@ Rkn::Rkn(QObject *parent) : QObject(parent), ic(0.0, 1.0)
    }
    F0 = new double[Ne];
    A = new complex<double>[NZ];
+   eff = new double[NZ];
 
    //========================================================================================//
    //						   / Массивы для A(z), th(z,th0), dthdz(z,th0)
@@ -100,7 +101,7 @@ Rkn::Rkn(QObject *parent) : QObject(parent), ic(0.0, 1.0)
          //         th[i][k] = 0.0;
          //         dthdz[i][k] = 0.0;
          p[k][i] = 0.0;
-      }
+      }            
 
       double pre, pim, absp;
 
@@ -121,6 +122,8 @@ Rkn::Rkn(QObject *parent) : QObject(parent), ic(0.0, 1.0)
       if (absp > abspmax)
          abspmax = absp;
    }
+
+   F = sqrt(Ar * Ar + Ai * Ai);
 
    //   ofstream f;
    //   f.open("test.dat");
@@ -201,18 +204,22 @@ void Rkn::calculate()
    //						   / Начальные условия
    //========================================================================================//
 
-   complex<double> v;
+   complex<double> v, *ptmp;
+
+   ptmp = new complex<double>[Ne];
    double pre, pim, absp;
    for (int i = 0; i < NZ - 1; i++) {
       for (int k = 0; k < Ne; k++) {
          v = p[k][i];
-         s1[k] = F(z[i], p[k][i], A[i]);
-         s2[k] = F(z[i] + h / 2.0, v + h * s1[k] / 2.0, A[i]);
+         s1[k] = RHS(z[i], p[k][i], A[i]);
+         s2[k] = RHS(z[i] + h / 2.0, v + h * s1[k] / 2.0, A[i]);
 
-         s3[k] = F(z[i] + h / 2.0, v + h * s2[k] / 2.0, A[i]);
+         s3[k] = RHS(z[i] + h / 2.0, v + h * s2[k] / 2.0, A[i]);
 
-         s4[k] = F(z[i] + h, v + h * s3[k], A[i]);
+         s4[k] = RHS(z[i] + h, v + h * s3[k], A[i]);
          p[k][i + 1] = v + h * (s1[k] + 2.0 * s2[k] + 2.0 * s3[k] + s4[k]) / 6.0;
+
+         ptmp[k] = p[k][i + 1];
 
          pre = real(p[k][i + 1]);
          pim = imag(p[k][i + 1]);
@@ -232,9 +239,23 @@ void Rkn::calculate()
             abspmax = absp;
       }
 
+      eff[i + 1] = 1.0 - sum(ptmp, Ne);
+
+      if (eff[i + 1] < effmin)
+         effmin = eff[i + 1];
+      if (eff[i + 1] > effmax)
+         effmax = eff[i + 1];
+
+      qDebug() << "eff = " << eff[i + 1];
+
       it = i + 1;
       emit paintSignal();
       QMutexLocker ml(&mx);
+
+      premin = 1000;
+      premax = -1000;
+      pimmin = 1000;
+      pimmax = -100;
    }
 
    if (m_stop) {
@@ -258,16 +279,15 @@ void Rkn::calculate()
 //							 Functions
 //****************************************************************************************//
 
-inline complex<double> Rkn::F(double z, complex<double> p, complex<double> A)
+inline complex<double> Rkn::RHS(double z, complex<double> p, complex<double> A)
 {
-   return ic * (A - (delta + abs(p) * abs(p) - 1.0) * p);
+   return ic * (A * F - (delta + abs(p) * abs(p) - 1.0) * p);
 }
 
 inline void Rkn::calc_A(complex<double> *A, double *z, double Ar, double Ai)
 {  
    for (int i = 0; i < NZ; i++) {
-      A[i] = sqrt(Ar * Ar + Ai * Ai)
-             * exp(-3.0 * (((z[i] - L / 2.0) / (L / 2.0)) * ((z[i] - L / 2.0) / (L / 2.0))));
+      A[i] = exp(-3.0 * (((z[i] - L / 2.0) / (L / 2.0)) * ((z[i] - L / 2.0) / (L / 2.0))));
 
       if (abs(A[i]) < Amin)
          Amin = abs(A[i]);
@@ -275,12 +295,26 @@ inline void Rkn::calc_A(complex<double> *A, double *z, double Ar, double Ai)
          Amax = abs(A[i]);
    }
 
+   qDebug() << "A[0] = " << real(A[0]);
+   qDebug() << "A[NZ-1] = " << real(A[NZ - 1]);
+
    //   ofstream f;
    //   f.open("test.dat");
    //   for (int i = 0; i < NZ; i++) {
    //      f << i << " " << abs(A[i]) << endl;
    //   }
    //   f.close();
+}
+
+double Rkn::sum(complex<double> *p, int n)
+{
+   double sum = 0;
+   for (int i = 0; i < n; i++) {
+      sum = sum + abs(p[i]) * abs(p[i]);
+   }
+
+   sum = sum / double(n);
+   return sum;
 }
 //========================================================================================//
 //						   / Functions

@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 {
    QApplication a(argc, argv);
    MainWindow window;
-   window.setWindowTitle("Решение уравнения изохронного осциллятора (64-bit)");
+   window.setWindowTitle("Решение уравнения неизохронного осциллятора (64-bit)");
    window.show();
    return a.exec();
 }
