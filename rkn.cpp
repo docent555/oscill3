@@ -76,6 +76,7 @@ Rkn::Rkn(QObject *parent) : QObject(parent), ic(0.0, 1.0)
    }
    F0 = new double[Ne];
    A = new complex<double>[NZ];
+   circ = new complex<double>[361];
    eff = new double[NZ];
 
    //========================================================================================//
@@ -123,14 +124,20 @@ Rkn::Rkn(QObject *parent) : QObject(parent), ic(0.0, 1.0)
          abspmax = absp;
    }
 
+   for (int k = 0; k <= 360; k++) {
+      circ[k] = exp(ic * 2.0 * M_PI / 360.0 * double(k));
+   }
+
    F = sqrt(Ar * Ar + Ai * Ai);
 
    //   ofstream f;
    //   f.open("test.dat");
-   //   for (int i = 0; i < Ne; i++) {
-   //      f << i << ' ' << real(p[i][0]) << "   " << imag(p[i][0]) << '\n';
+   //   for (int i = 0; i < 360; i++) {
+   //      f << i << ' ' << real(circ[i]) << "   " << imag(circ[i]) << '\n';
    //   }
    //   f.close();
+   //   exit(0);
+
    //========================================================================================//
    //						   / Начальные условия для p
    //========================================================================================//
@@ -258,6 +265,17 @@ void Rkn::calculate()
       pimmax = -100;
    }
 
+   //   ofstream f;
+   //   f.open("test.dat");
+   //   for (int i = 0; i < NZ; i++) {
+   //      for (int k = 0; k < Ne; k++)
+   //         f << real(p[k][i]) << "   ";
+   //      for (int k = 0; k < Ne; k++)
+   //         f << imag(p[k][i]) << "   ";
+   //      f << '\n';
+   //   }
+   //   f.close();
+
    if (m_stop) {
       while (m_calculating) {
       }
@@ -281,7 +299,8 @@ void Rkn::calculate()
 
 inline complex<double> Rkn::RHS(double z, complex<double> p, complex<double> A)
 {
-   return ic * (A * F - (delta + abs(p) * abs(p) - 1.0) * p);
+   //   return ic * (A * F - (delta + abs(p) * abs(p) - 1.0) * p);
+   return ic * (A * F * conj(p) - (delta + abs(p) * abs(p) - 1.0) * p);
 }
 
 inline void Rkn::calc_A(complex<double> *A, double *z, double Ar, double Ai)

@@ -21,12 +21,21 @@ Widgetui::Widgetui(Rkn *r, QWidget *parent)
    z = r->getz();
    nz = r->getnz();
    p = r->get_p();
+   circ = r->get_circ();
    it = r->getit();
    ne = r->getNe();
    phase_space = r->get_phase_space();
    draw_trajectories = r->get_draw_trajectories();
    A = r->getA();
    eff = r->get_eff();
+
+   //   ofstream f;
+   //   f.open("test.dat");
+   //   for (int i = 0; i < 360; i++) {
+   //      f << i << ' ' << real(circ[i]) << "   " << imag(circ[i]) << '\n';
+   //   }
+   //   f.close();
+   //   exit(0);
 
    ifstream in("input_oscill.in");
    if (!in) {
@@ -309,6 +318,9 @@ QChart *Widgetui::createScatterChart_phs()
       series[i]->setUseOpenGL(true);
    }
 
+   series_circ.append(new QLineSeries());
+   //   series_circ[0]->setUseOpenGL(true);
+
    xAxis = new QValueAxis; // Ось X
    xAxis->setRange(*xmin, *xmax);
    xAxis->setTitleText(tr("Re(p)")); // Название оси X
@@ -344,6 +356,16 @@ QChart *Widgetui::createScatterChart_phs()
       series[i]->attachAxis(yAxis);
    }
 
+   chart->addSeries(series_circ[0]);
+   series_circ[0]->attachAxis(xAxis);
+   series_circ[0]->attachAxis(yAxis);
+
+   QPen pen;
+   pen.setBrush(Qt::white);
+   pen.setStyle(Qt::DashLine);
+   pen.setWidth(1);
+   series_circ[0]->setPen(pen);
+
    return chart;
 }
 
@@ -377,8 +399,10 @@ void Widgetui::paintGraph()
          series[i]->append(z[j], abs(p[i][j]));
       }
    } else {
-      xAxis->setRange((*xmin) - 0.2, (*xmax) + 0.2);
-      yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
+      //      xAxis->setRange((*xmin) - 0.2, (*xmax) + 0.2);
+      //      yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
+      xAxis->setRange(-1.5, 1.5);
+      yAxis->setRange(-1.5, 1.5);
 
       for (int i = 0; i < ne; i++) {
          if (draw_trajectories == 0)
@@ -424,8 +448,10 @@ void Widgetui::init_paintGraph()
          series[i]->append(z[j], abs(p[i][j]));
       }
    } else {
-      xAxis->setRange((*xmin) - 0.2, (*xmax) + 0.2);
-      yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
+      //      xAxis->setRange((*xmin) - 0.2, (*xmax) + 0.2);
+      //      yAxis->setRange((*ymin) - 0.2, (*ymax) + 0.2);
+      xAxis->setRange(-1.5, 1.5);
+      yAxis->setRange(-1.5, 1.5);
 
       for (int i = 0; i < ne; i++) {
          //         if (draw_trajectories == 0)
@@ -433,6 +459,11 @@ void Widgetui::init_paintGraph()
          series[i]->setBrush(green);
          //         series[i]->append(real(p[i][j]), imag(p[i][j]));
          series[i]->append(real(p[i][j]), imag(p[i][j]));
+      }
+
+      for (int i = 0; i <= 360; i++) {
+         series_circ[0]->setBrush(green);
+         series_circ[0]->append(real(circ[i]), imag(circ[i]));
       }
    }
    for (int i = 0; i < nz; i++)
